@@ -1,0 +1,63 @@
+<?php
+// $Id: mail_redirect.install,v 1.2 2011/01/05 07:08:03 ptalindstrom Exp $
+
+/**
+ * @file
+ * Install, update and uninstall functions for the mail_redirect module.
+ *
+ */
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function mg_mail_redirect_install() {
+
+  // set system weight so that mg_mail_redirect runs after other modules
+  db_update('system')
+  ->fields(array(
+    'weight' => 20,
+  ))
+  ->condition('name', 'mg_mail_redirect')
+  ->execute();
+
+  // warn users that they need to still set mg_mail_redirect_domain for this module to do anything
+  $mimenote = "";
+  if (stristr(variable_get('mg_mail_redirect_domain'), ".")) {
+    $msg = "<strong>mg_mail_redirect: </strong>Site mail is now being redirected to <strong>" . variable_get('mg_mail_redirect_domain') . "</strong>";
+    $severity = 'status';
+    // check if mimemail module is installed and if it has been patched
+    if (module_exists("mimemail")) {
+      $mimenote = "<strong>mg_mail_redirect: </strong>Mimemail is being used on your site, ";
+      $mimemail_code = file_get_contents(drupal_get_path('module', 'mimemail') . "/mimemail.module");
+      if (stristr($mimemail_code, "module_implements('mail_alter')")) {
+        $mimenote .= "and it has been patched to work with Mail Redirect";
+        $severity = 'status';
+      }
+      else {
+        $mimenote .= "BUT it has NOT been patched to work with Mail Redirect";
+        $severity = 'error';
+      }
+    }
+  }
+  else {
+    $msg = "<strong>mg_mail_redirect: </strong>Mindgrub mail redirect is installed but your mail is not being redirected. You need to add
+      mg_mail_redirect_domain variable either in settings.php or admin page - see README.txt for more info.";
+    $severity = 'error';
+  }
+
+  drupal_set_message($msg . "<br>" . $mimenote, $severity);
+
+}
+
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function mg_mail_redirect_uninstall() {
+
+  variable_del('mg_mail_redirect_domain');
+  drupal_set_message('<strong>mg_mail_redirect:</strong> your <em>mg_mail_redirect_domain</em> variable has been deleted', 'status');
+
+}
+

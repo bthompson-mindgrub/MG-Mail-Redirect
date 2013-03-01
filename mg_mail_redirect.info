@@ -1,0 +1,10 @@
+name = Mindgrub Mail Redirect
+description = Used for testing mail functions on test sites with real emails addresses in the db. Redirects ALL system generated email to a test mail domain.
+package = Mail
+configure = admin/config/mg_mail_redirect
+
+version = 7.x-1.0
+core = 7.x
+
+files[] = mg_mail_redirect.install
+files[] = mg_mail_redirect.module
