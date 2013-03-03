@@ -106,7 +106,7 @@ function mg_mail_redirect_mail_alter(&$message) {
      */
 
     if (stristr($message['to'], ",")) { // then we have a list
-      $tos = split(",", $message['to']);
+      $tos = explode(",", $message['to']);
       array_walk($tos, '_mg_mail_redirect_trim_array_values');
     }
     else {
@@ -124,13 +124,13 @@ function mg_mail_redirect_mail_alter(&$message) {
     }
 
     foreach ($tos as $key => $to) {
-      if (is_array($excludeList) && array_search(strtolower($to), $excludeList) !== FALSE) {
+      if (is_array($excludeList) && array_search($to, $excludeList) !== FALSE) {
         //We found a match for this address in the exclude list.  Don't rewrite it, just pass it on
         drupal_set_message(t('The following TO address: %to has NOT been redirected to the following TEST DOMAIN: %mydomain as it is on the exclude list.',
           array('%to' => $to, '%mydomain' => $mydomain), array('langcode' => 'status')));
         continue;
       }
-      if (is_array($blockList) && array_search(strtolower($to), $blockList) !== FALSE) {
+      if (is_array($blockList) && array_search($to, $blockList) !== FALSE) {
         //We found a match for this address in the block list.  Don't rewrite it, just remove it and continue.
         drupal_set_message(t('Mail to the address: %to has been blocked by the Mindgrub Mail Redirect module.',
           array('%to' => $to), array('langcode' => 'status')));
@@ -149,7 +149,12 @@ function mg_mail_redirect_mail_alter(&$message) {
       }
     }
 
-    $message['to'] = join(",", $tos);
+    if (empty($tos)) {
+      $message['send'] = FALSE;
+      return;
+    } else {
+      $message['to'] = join(",", $tos);
+    }
   }
 }
 
